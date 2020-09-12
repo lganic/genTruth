@@ -102,8 +102,11 @@ def invertExpression(exp):
     exp=exp.replace("?","+")
     return exp
 
-invertExpression("ab+c")
-
+def notVar(var):
+    #returns inverse of a single variable
+    if len(var)==2:
+        return var[:1]
+    return var+"'"
 
 def betterFind(string,substring):
     out=[]
@@ -310,14 +313,37 @@ class expression:
             if a.equals(temp):
                 return True
         return False
-
-
+    def replace(self,indexingTerm,writeTerm):
+        temp=termDat(indexingTerm)
+        write=termDat(writeTerm)
+        for a in range(len(self.terms)):
+            if self.terms[a].equals(temp):
+                self.terms[a]=write
+    def weirdCheck(self):
+        for term in self.terms:
+            for item in term.terms:
+                newval=notVar(item)
+                for term2 in self.terms:
+                    if not term.equals(term2):
+                        for item2 in term2.terms:
+                            if item2==newval:
+                                #HEY WE CAN APPLY THIS STUPID FUCKING RULE
+                                oldstr=self.toString()
+                                idk=(term.toString()+term2.toString())
+                                if len(newval)>len(item):
+                                    idk=idk.replace(newval,"").replace(item,"")
+                                else:
+                                    idk=idk.replace(item,"").replace(newval,"")
+                                if idk in self:
+                                    self.replace(idk,"0")
+                                    return ["weird removal rule ",idk,oldstr,self.toString()]
+        return None
 #[actiontype,metadata,oldstring,newstring]
 
-def checkActions(string):
+def checkActions(string,final=False):
     for i in range(len(string)):
         if string[i]==")":
-            if i!=len(string)-1 and not string[i+1] in "(+'":
+            if i!=len(string)-1 and not string[i+1] in "()+'":
                 #end distribute needs to be moved or itll cause problems
                 i1=i+1
                 i2=i1
@@ -370,10 +396,16 @@ def checkActions(string):
         temp=sd.index(temp)
         exp1=string[fd[temp]+1:sd[temp]]
         exp2=string[fd[temp+1]+1:sd[temp+1]]
+        bool=False
+        if sd[temp+1]!=len(string)-1 and string[sd[temp+1]+1]=="(":
+            bool=True
         nex=expression(exp1)
         nex.multiply(expression(exp2).terms)
         nex=nex.toString()
-        newstring=string.replace("("+exp1+")("+exp2+")",nex,1)
+        if bool:
+            newstring=string.replace("("+exp1+")("+exp2+")","("+nex+")",1)
+        else:
+            newstring=string.replace("("+exp1+")("+exp2+")",nex,1)
         return ["multiply expressions together","("+exp1+")("+exp2+")",string,newstring]
     #type 2,3 multiplies
     if "(" in string:
@@ -416,6 +448,14 @@ def checkActions(string):
     #at this point there should be no parenthesis in the expression
     #check boolean rules here
     exp=expression(string)
+    if "1'" in exp:
+        oldstr=exp.toString()
+        exp.replace("1'","0")
+        return ["invert ","1'",oldstr,exp.toString()]
+    if "0'" in exp:
+        oldstr=exp.toString()
+        exp.replace("0'","1")
+        return ["invert ","0'",oldstr,exp.toString()]
     if len(exp.terms)>1:
         simple=exp.applyIdentityLaws()
         if simple!=None:
@@ -423,6 +463,10 @@ def checkActions(string):
         complex=exp.applyComplexLaws()
         if complex!=None:
             return ["absorbtion law",complex[1],string,string.replace(complex[2],complex[3],1)]
+        if len(exp.terms)>2:
+            test=exp.weirdCheck()
+            if test!=None:
+                return ["weird rule",test[1],string,string.replace(test[2],test[3],1)]
     elif len(exp.terms)==1 and len(exp.terms[0].terms)>1:
         simple=exp.applyIdentityLaws(full=False)
         if simple!=None:
@@ -441,6 +485,8 @@ def checkActions(string):
         #divide out item in lst from expression'
         exp.divide(lst)
         newstring=exp.toString()
+        if checkActions(newstring)==None and not final:
+            return None
         meta=""
         for a in lst:
             meta+=a
@@ -513,4 +559,11 @@ while True:
             simp=event[3]
             if not simp in history:
                 print(event[0],":",simp)
+                current=simp
+    test=checkActions(current,final=True)
+    if test!=None:
+        print(test[0],":",test[3])
+        current=test[3]
+    print("")
+    print(current)
     print("")
