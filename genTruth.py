@@ -315,6 +315,24 @@ class expression:
 #[actiontype,metadata,oldstring,newstring]
 
 def checkActions(string):
+    for i in range(len(string)):
+        if string[i]==")":
+            if i!=len(string)-1 and not string[i+1] in "(+'":
+                #end distribute needs to be moved or itll cause problems
+                i1=i+1
+                i2=i1
+                while i2!=len(string)-1 and not string[i2] in "(+":
+                    i2+=1
+                i2+=(i2==len(string)-1)
+                depth=1
+                while depth!=0:
+                    i-=1
+                    if string[i]==")":
+                        depth+=1
+                    if string[i]=="(":
+                        depth-=1
+                newstring=string.replace(string[i:i2],string[i1:i2]+string[i:i1])
+                return ["move multiple to left side",string[i1:i2],string,newstring]
     if "(" in string or ")" in string:
         fd=betterFind(string,"(")
         sd=[]
@@ -376,7 +394,7 @@ def checkActions(string):
             if dist!="":
                 if dist in nex:
                     newstring=string.replace(dist+"("+exp1+")",dist,1)
-                    return ["distributive absorbtion law 1",dist+"("+exp1+")",string,newstring]
+                    return ["distributive absorbtion law",dist+"("+exp1+")",string,newstring]
                 #if len(dist)-(dist[-1]=="'")==1:
                 #    ndist=invertExpression(dist)[1:-1]
                 #    if ndist in nex:
