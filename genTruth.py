@@ -399,6 +399,8 @@ def checkActions(string,final=False):
         bool=False
         if sd[temp+1]!=len(string)-1 and string[sd[temp+1]+1]=="(":
             bool=True
+        if fd[temp]!=0 and string[fd[temp]-1]!="+":
+            bool=True
         nex=expression(exp1)
         nex.multiply(expression(exp2).terms)
         nex=nex.toString()
