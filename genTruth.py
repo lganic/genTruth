@@ -496,7 +496,9 @@ def checkActions(string,final=False):
 
 
 while True:
-    exp=input("expression:")
+    exp=""
+    while exp=="":
+        exp=input("expression:")
     s=""
     for a in exp:
         if not a in "'10+()" and not a in s:
