@@ -252,8 +252,8 @@ class expression:
             for i in range(len(self.terms)):
                 if self.terms[i].is0():
                     oldstr=self.toString()
-                    self.terms.pop(i)
-                    return [2,self.terms[i],oldstr,self.toString()]
+                    temp=self.terms.pop(i)
+                    return [2,temp,oldstr,self.toString()]
             for a in range(len(lst)):
                 for b in range(len(lst)):
                     if a!=b and lst[a]==lst[b]:
