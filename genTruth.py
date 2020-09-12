@@ -251,44 +251,44 @@ class expression:
             if True in [v.is1() for v in self.terms]:
                 oldstr=self.toString()
                 self.terms=[termDat("1")]
-                return [1,oldstr,oldstr,"1"]
+                return ["identity rule 1",oldstr,oldstr,"1"]
             for i in range(len(self.terms)):
                 if self.terms[i].is0():
                     oldstr=self.toString()
                     temp=self.terms.pop(i)
-                    return [2,temp,oldstr,self.toString()]
+                    return ["identity rule 2",temp,oldstr,self.toString()]
             for a in range(len(lst)):
                 for b in range(len(lst)):
                     if a!=b and lst[a]==lst[b]:
                         oldstr=self.toString()
                         self.terms.pop(a)
-                        return [3,lst[a],oldstr,self.toString()]
+                        return ["indeponent rule 1",lst[a],oldstr,self.toString()]
             for a in lst:
                 temp=invertExpression(a)[1:-1]
                 if temp in lst:
                     oldstr=self.toString()
                     self.terms=[termDat("1")]
-                    return [4,a+","+temp,oldstr,self.toString()]
+                    return ["complement rule 1",a+","+temp,oldstr,self.toString()]
         for a in lst:
             if "1" in a:
                 rep=a
                 wit=rep.replace("1","")
                 oldstr=self.toString()
-                return [5,rep,oldstr,self.toString().replace(rep,wit)]
+                return ["identity rule 3",rep,oldstr,self.toString().replace(rep,wit)]
         for a in lst:
             if "0" in a:
                 oldstr=self.toString()
-                return [6,a,oldstr,oldstr.replace(a,"0")]
+                return ["identity rule 4",a,oldstr,oldstr.replace(a,"0")]
         for item in self.terms:
             oldstr=self.toString()
             v=item.checkInverts()
             if v!=None:
-                return [8,v[0],oldstr,self.toString()]
+                return ["complement rule 2",v[0],oldstr,self.toString()]
         for item in self.terms:
             oldstr=self.toString()
             v=item.checkRepeats()
             if v!=None:
-                return [7,v[0],oldstr,self.toString()]
+                return ["indeponent rule 2",v[0],oldstr,self.toString()]
         return None
     def applyComplexLaws(self):
         oldstr=self.toString()
@@ -336,7 +336,7 @@ class expression:
                                     idk=idk.replace(item,"").replace(newval,"")
                                 if idk in self:
                                     self.replace(idk,"0")
-                                    return ["weird removal rule ",idk,oldstr,self.toString()]
+                                    return ["consensus theorem ",idk,oldstr,self.toString()]
         return None
 #[actiontype,metadata,oldstring,newstring]
 
@@ -461,18 +461,18 @@ def checkActions(string,final=False):
     if len(exp.terms)>1:
         simple=exp.applyIdentityLaws()
         if simple!=None:
-            return ["identity rule "+str(simple[0]),simple[1],string,string.replace(simple[2],simple[3],1)]
+            return [simple[0],simple[1],string,string.replace(simple[2],simple[3],1)]
         complex=exp.applyComplexLaws()
         if complex!=None:
             return ["absorbtion law",complex[1],string,string.replace(complex[2],complex[3],1)]
         if len(exp.terms)>2:
             test=exp.weirdCheck()
             if test!=None:
-                return ["weird rule",test[1],string,string.replace(test[2],test[3],1)]
+                return [test[0],test[1],string,string.replace(test[2],test[3],1)]
     elif len(exp.terms)==1 and len(exp.terms[0].terms)>1:
         simple=exp.applyIdentityLaws(full=False)
         if simple!=None:
-            return ["identity rule "+str(simple[0]),simple[1],string,string.replace(simple[2],simple[3],1)]
+            return [simple[0],simple[1],string,string.replace(simple[2],simple[3],1)]
     #check for better arrangements for div outs
     exp=expression(string)
     if len(exp.terms)>2:
@@ -568,6 +568,11 @@ while True:
     if test!=None:
         print(test[0],":",test[3])
         current=test[3]
+    if not "(" in current:
+        s=invertExpression(current).replace(")(","")+"'"
+        if len(s)<len(current):
+            print("invert expression :",s)
+            current=s
     print("")
     print(current)
     print("")
