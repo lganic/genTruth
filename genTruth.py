@@ -477,7 +477,7 @@ def checkActions(string,final=False):
     exp=expression(string)
     if len(exp.terms)>2:
         solve=exp.fitDivOuts()
-        if solve!=False:
+        if solve!=False and checkActions(checkActions(solve[0].toString())[1])!=None:
             newstring="("+solve[0].toString()+")+"+solve[1].toString()
             return ["reorder",string,string,newstring]
     #check for div outs
@@ -492,7 +492,7 @@ def checkActions(string,final=False):
         meta=""
         for a in lst:
             meta+=a
-        return ["divide",meta,string,meta+"("+newstring+")"]
+        return ["divide",newstring,string,meta+"("+newstring+")"]
     return None
 
 
