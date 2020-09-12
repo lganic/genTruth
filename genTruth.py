@@ -220,7 +220,7 @@ class expression:
         exp1=[]
         import copy
         for solve in self.recurs():
-            temp=max([len(v.toString()) for v in solve[1]])
+            temp=min([len(v.toString()) for v in solve[1]])
             if solve[0]>divs:
                 exp1=copy.copy(solve[1])
                 num=temp
