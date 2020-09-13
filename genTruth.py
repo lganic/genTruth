@@ -224,14 +224,17 @@ class expression:
         import copy
         for solve in self.recurs():
             temp=min([len(v.toString()) for v in solve[1]])
-            if solve[0]>divs:
-                exp1=copy.copy(solve[1])
-                num=temp
-                divs=solve[0]
-            elif solve[0]==divs and temp<num:
-                exp1=copy.copy(solve[1])
-                num=temp
-                divs=solve[0]
+            texp=expression("a")
+            texp.terms=copy.copy(solve[1])
+            if checkActions(texp.toString())!=None and checkActions(checkActions(texp.toString())[1])!=None:
+                if solve[0]>divs:
+                    exp1=copy.copy(solve[1])
+                    num=temp
+                    divs=solve[0]
+                elif solve[0]==divs and temp<num:
+                    exp1=copy.copy(solve[1])
+                    num=temp
+                    divs=solve[0]
         if divs<=before:
             return False
         exp2=copy.copy(self.terms)
@@ -295,11 +298,7 @@ class expression:
         for a in self.terms:
             if len(a.terms)==1:
                 bool=False
-                newTerm=a.terms[0]
-                if len(newTerm)==1:
-                    newTerm+="'"
-                else:
-                    newTerm=newTerm[:1]
+                newTerm=notVar(a.terms[0])
                 for b in self.terms:
                     n=b.remove(newTerm)
                     if n:
@@ -477,7 +476,8 @@ def checkActions(string,final=False):
     exp=expression(string)
     if len(exp.terms)>2:
         solve=exp.fitDivOuts()
-        if solve!=False and checkActions(checkActions(solve[0].toString())[1])!=None:
+        #some serious short circuiting goin on there goddam VVV
+        if solve!=False and checkActions(solve[0].toString())!=None and checkActions(checkActions(solve[0].toString())[1])!=None:
             newstring="("+solve[0].toString()+")+"+solve[1].toString()
             return ["reorder",string,string,newstring]
     #check for div outs
@@ -496,11 +496,46 @@ def checkActions(string,final=False):
     return None
 
 
-
+print('type in boolean expression or type "help" for a list of commands')
 while True:
     exp=""
     while exp=="":
         exp=input("expression:")
+        if exp=="cls":
+            exp=""
+            import os
+            os.system("cls")# <-- i know this is stupid and lazy but so am i
+        if exp=="list":
+            #lists all boolean rules used in simplification
+            lst=['identity rule 1 X+1 = 1', 'identity rule 2 X+0 = X', 'identity rule 3  X1 = X', 'identity rule 4  X0 = 0', 'indeponent rule 1 X+X = X', 'indeponent rule 2 XX = X', "complement rule 1 X+X' = 1", "complement rule 2 XX' = 0", "absorbtion law X+X'Y = X+Y", "consensus theorem XY+X'Z+YZ = XY+X'Z", 'move multiple to left side (Y+Z)X = X(Y+Z)', "distribute not (x+y)' = x'y'", 'multiply expressions together (A+B)(C+D) = AC+AD+BC+BD', 'distributive absorbtion law X(X+Y) = X', 'distribute X(Y+Z) = XY+XZ', 'remove parenthesis (X+Y)+Z = X+Y+Z', "invert 1' = 0", 'reorder X+Z+XY = (X+XY)+Z', 'divide X+XY = X(1+Y)']
+            for p in lst:
+                print(p)
+            exp=""
+        if exp=="help":
+            lst=["cls=clear screen","list=list all boolean rules used in simplification","help=prints all commands","how=how to use this thing","about=about the program","ascii=some art"]
+            for a in lst:
+                print(a)
+            exp=""
+        if exp=="ascii":
+            exp=""
+            lst=['                                                                          ,//,', '                                                                      ,/#%#%/.', '                                                                 /#%######.', '                                                               *&%##(##%/', '                                                       (*    *#%#####%#,', '                                                       (*.  #%##%%%%%/.', '                                                    ./%&&&%###%%&&(,', '                                                    *%%&%#%%%/.', '                                                   /%%##%&%.', '                                      .(        ,&%##%@(.', '                                      ,%&&&( ,%&%#%&#.', '                                      ,%&&%%%%##%&@*', '                                      .(&&%##%&&%(/.', '                                   ,#%%%##%&&%&&&@*', '                                ,(##(((#&&/  /%&%,', '                              (###(####&&(,   (&%.          ____________ _____', '                           *#(((((#%%#(&@*   .#@%           | ___ \\ ___ \\  __ \\', '                         (######%%#. ./@@*   ,#@%           | |_/ / |_/ / |  \\/', '                      *#%#(###%#*    ./@@*                  |    /|  __/| | __', '                    /######%#*        *@#.                  | |\\ \\| |   | |_\\ \\', '                 *#((##%%,                                  \\_| \\_\\_|    \\____/', '              .&%#####*', '           ,#&%#%%#/', '  ,(#  ,#&&%##%@#,             _______   _                _               _', '  (&&%%%%##%&#.               |___  / | | |      ______  | |             | |', '  /%&@%##%@(,                    / /| |_| |__   |______| | |__   ___  ___| |_', "  ,(&&&&%#                      / / | __| '_ \\   ______  | '_ \\ / _ \\/ __| __|", '   *&&&(.                     ./ /  | |_| | | | |______| | |_) |  __/\\__ \\ |_', '    ,&&(.                     \\_/    \\__|_| |_|          |_.__/ \\___||___/\\__|']
+            for a in lst:
+                print(a)
+        if exp=="how":
+            exp=""
+            print("after typing in expression first a truth table will be generated from the expression")
+            print("the product of sums and sum of products is then generated and printed")
+            print("irrelevant terms are listed after that")
+            print("irrelevant terms are terms which based on the truth table show to have no effect on the outcome of the function")
+            print("the system will then attempt to simplify the expression")
+            print("basically just type in a boolean expression and get the bit of data you need")
+            print("its not that hard")
+        if exp=="about":
+            exp=""
+            print("version 1.9")
+            print("made by Logan Boehm")
+            print("plz dont read the code, its really bad")
+            print("if you find any bugs please feel free to let me know and i'll do my best to patch it")
     s=""
     for a in exp:
         if not a in "'10+()" and not a in s:
@@ -556,6 +591,7 @@ while True:
     print("simplification of",exp,"\n")
     history=[]
     simp=exp
+    current=exp
     while not simp in history:
         history.append(simp)
         event=checkActions(simp)
