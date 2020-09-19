@@ -536,9 +536,9 @@ def checkActions(string,final=False):
         exp1=string[fd[temp]+1:sd[temp]]
         exp2=string[fd[temp+1]+1:sd[temp+1]]
         bool=False
-        if sd[temp+1]!=len(string)-1 and string[sd[temp+1]+1]=="(":
+        if sd[temp+1]!=len(string)-1 and string[sd[temp+1]+1] in "(^":
             bool=True
-        if fd[temp]!=0 and string[fd[temp]-1]!="+":
+        if fd[temp]!=0 and not string[fd[temp]-1] in "+^":
             bool=True
         nex=expression(exp1)
         nex.multiply(expression(exp2).terms)
@@ -569,7 +569,7 @@ def checkActions(string,final=False):
             #check dist rule
             if dist!="":
                 if dist in nex:
-                    newstring=string.replace(dist+"("+exp1+")",dist,1)
+                    newstring=string.replace(dist+"("+exp1+")","("+dist+")",1)
                     return ["distributive absorbtion law",dist+"("+exp1+")",string,newstring]
                 #if len(dist)-(dist[-1]=="'")==1:
                 #    ndist=invertExpression(dist)[1:-1]
@@ -579,7 +579,7 @@ def checkActions(string,final=False):
                 #must distribute
                 nex.multiply([termDat(dist)])
                 nex=nex.toString()
-                newstring=string.replace(dist+"("+exp1+")",nex,1)
+                newstring=string.replace(dist+"("+exp1+")","("+nex+")",1)
                 return ["distribute",dist+"("+exp1+")",string,newstring]
             else:
                 remPar=True
@@ -742,7 +742,7 @@ while True:
                 print(a)
         if exp=="/about":
             exp=""
-            lst=["genTruth version 1.10","a python based command line boolean algebra system","made by Logan Boehm","if you find any bugs please feel free to let me know and i'll do my best to patch it"]
+            lst=["genTruth version 1.12","a python based command line boolean algebra system","made by Logan Boehm","if you find any bugs please feel free to let me know and i'll do my best to patch it"]
             for a in lst:
                 print(a)
     s=""
