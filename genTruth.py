@@ -60,6 +60,31 @@ def proc(exp,dict):
             if nex.count(pat)>0:
                 change=True
                 nex=nex.replace(pat,"1")
+    while "^" in nex:
+        l=["0^0"]
+        change=True
+        while change:
+            change=False
+            for pat in l:
+                if nex.count(pat)>0:
+                    change=True
+                    nex=nex.replace(pat,"0")
+        l=["1^0","0^1"]
+        change=True
+        while change:
+            change=False
+            for pat in l:
+                if nex.count(pat)>0:
+                    change=True
+                    nex=nex.replace(pat,"1")
+        l=["1^1"]
+        change=True
+        while change:
+            change=False
+            for pat in l:
+                if nex.count(pat)>0:
+                    change=True
+                    nex=nex.replace(pat,"0")
     return int(nex)
 
 def binary(digits):
@@ -473,7 +498,7 @@ def checkActions(string,final=False):
         t.start()
     for i in range(len(string)):
         if string[i]==")":
-            if i!=len(string)-1 and not string[i+1] in "()+'":
+            if i!=len(string)-1 and not string[i+1] in "()+'^":
                 #end distribute needs to be moved or itll cause problems
                 i1=i+1
                 i2=i1
@@ -526,6 +551,7 @@ def checkActions(string,final=False):
     if enable_Timer:
         t.lap("multiply check")
     #type 2,3 multiplies
+    remPar=False
     if "(" in string:
         ind1=string.find("(")
         ind2=string.find(")")
@@ -556,15 +582,55 @@ def checkActions(string,final=False):
                 newstring=string.replace(dist+"("+exp1+")",nex,1)
                 return ["distribute",dist+"("+exp1+")",string,newstring]
             else:
+                remPar=True
                 exp1=string[ind1+1:ind2]
                 newstring=string.replace("("+exp1+")",exp1,1)
-                return ["remove parenthesis","("+exp1+")",string,newstring]
+                #return ["remove parenthesis","("+exp1+")",string,newstring]
         else:
+            remPar=True
             exp1=string[ind1+1:ind2]
             newstring=string.replace("("+exp1+")",exp1,1)
-            return ["remove parenthesis","("+exp1+")",string,newstring]
+            #return ["remove parenthesis","("+exp1+")",string,newstring]
     if enable_Timer:
         t.lap("dist check")
+    if "^" in string:
+        ind=string.find("^")
+        left=ind
+        right=ind+1
+        if string[ind-1]==")":
+            while string[left]!="(":
+                left-=1
+        else:
+            while left>0 and string[left]!="+":
+                left-=1
+            if string[left]=="+":
+                left+=1
+        if string[ind+1]=="(":
+            while string[right]!=")":
+                right+=1
+        else:
+            while right<len(string)-1 and not string[right] in "+^":
+                right+=1
+            if string[right] in "+^":
+                right-=1
+        left=string[left:ind]
+        right=string[ind+1:right+1]
+        oldstr=left+"^"+right
+        if "(" in left:
+            left=left[1:-1]
+        if "(" in right:
+            right=right[1:-1]
+        notLeft=invertExpression(left)
+        notRight=invertExpression(right)
+        left="("+left+")"
+        right="("+right+")"
+        meta="("+left+notRight+"+"+notLeft+right+")"
+        newstring=string.replace(oldstr,meta)
+        return ["distribute XOR",meta,string,newstring]
+    if remPar:
+        return ["remove parenthesis","("+exp1+")",string,newstring]
+    if enable_Timer:
+        t.lap("XOR incorporate")
     #at this point there should be no parenthesis in the expression
     #check boolean rules here
     exp=expression(string)
@@ -631,6 +697,7 @@ while True:
     while exp=="" or not run:
         run=True
         exp=input("expression:")
+        exp=exp.replace("XOR","^")
         if exp.count("(")!=exp.count(")"):
             run=False
             print("parenthesis invalid")
@@ -638,12 +705,11 @@ while True:
         gs=True
         if "/t" in exp:
             exp=exp.replace("/t","")
-            exp=exp.strip()
             gt=False
         if "/s" in exp:
             exp=exp.replace("/s","")
-            exp=exp.strip()
             gs=False
+        exp=exp.replace(" ","")
         if not(gt or gs):
             print("r u fuckin serious")
             print("im not gonna print anything if you put both options in there")
@@ -671,7 +737,7 @@ while True:
                 print(a)
         if exp=="/how":
             exp=""
-            lst=["after typing in expression first a truth table will be generated from the expression","this can be disabled by putting /t in the expression","the product of sums and sum of products is then generated and printed","irrelevant terms are listed after that","irrelevant terms are terms which based on the truth table show to have no effect on the outcome of the function","the program will then attempt to simplify the expression this can be disabled by putting /s in the expression","basically just type in a boolean expression and get the bit of data you need","its not that hard"]
+            lst=["after typing in expression first a truth table will be generated from the expression","this can be disabled by putting /t in the expression","the product of sums and sum of products is then generated and printed","irrelevant terms are listed after that","irrelevant terms are terms which based on the truth table show to have no effect on the outcome of the function","the program will then attempt to simplify the expression this can be disabled by putting /s in the expression","basically just type in a boolean expression and get the bit of data you need","its not that hard","also XOR is supported, just have type XOR or ^ into the expression"]
             for a in lst:
                 print(a)
         if exp=="/about":
@@ -681,7 +747,7 @@ while True:
                 print(a)
     s=""
     for a in exp:
-        if not a in "'10+()" and not a in s:
+        if not a in "'10+()^" and not a in s:
             s+=a
     temp=sorted(s)
     s=""
